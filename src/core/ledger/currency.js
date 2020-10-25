@@ -24,7 +24,7 @@ export function parseEvmChainId(id: string): EvmChainId {
   return id;
 }
 
-export type EvmId = {|
+export type Evm = {|
   +type: "EVM",
   +chainId: EvmChainId,
   /**
@@ -44,7 +44,7 @@ export type EvmId = {|
  */
 export opaque type ProtocolSymbol: string = string;
 
-const protocolSymbolParser: C.Parser<ProtocolSymbol> = C.exactly([
+export const protocolSymbolParser: C.Parser<ProtocolSymbol> = C.exactly([
   "BTC",
   "FIL",
 ]);
@@ -53,32 +53,48 @@ const protocolSymbolParser: C.Parser<ProtocolSymbol> = C.exactly([
  * Chains like Bitcoin and Filecoin do not have "production" sidechains so
  * we represent them as a string, as specified in the ProtocolSymbol type
  */
-export type ProtocolId = {|
+export type Protocol = {|
   +type: "PROTOCOL",
   +chainId: ProtocolSymbol,
 |};
 
 export type ChainId = EvmChainId | ProtocolSymbol;
-export type CurrencyId = EvmId | ProtocolId;
+export type Currency = Evm | Protocol;
 
 export const evmChainParser: C.Parser<EvmChainId> = C.fmap(
   C.string,
   parseEvmChainId
 );
 
-export const evmIdParser: C.Parser<EvmId> = C.object({
+export const evmParser: C.Parser<Evm> = C.object({
   type: C.exactly(["EVM"]),
   chainId: evmChainParser,
   currencyAddress: ethAddressParser,
 });
 
-export const protocolIdParser: C.Parser<ProtocolId> = C.object({
+export const protocolParser: C.Parser<Protocol> = C.object({
   type: C.exactly(["PROTOCOL"]),
   chainId: protocolSymbolParser,
 });
 
 // @topocount TODO: enable protocolIdParser once we support its address types
-export const currencyIdParser: C.Parser<CurrencyId> = C.orElse([
-  evmIdParser,
-  protocolIdParser,
+export const currencyParser: C.Parser<Currency> = C.orElse([
+  evmParser,
+  protocolParser,
 ]);
+
+export function buildCurrency(
+  chainId: string,
+  currencyAddress?: string
+): Currency {
+  return currencyAddress
+    ? evmParser.parseOrThrow({
+        type: "EVM",
+        chainId,
+        currencyAddress,
+      })
+    : protocolParser.parseOrThrow({
+        type: "PROTOCOL",
+        chainId,
+      });
+}
