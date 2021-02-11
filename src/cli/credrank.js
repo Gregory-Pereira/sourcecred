@@ -48,11 +48,11 @@ const credrankCommand: Command = async (args, std) => {
   const config = await loadInstanceConfig(baseDir);
 
   taskReporter.start("load data");
-  const {weightedGraph, ledger, dependencies} = await prepareCredData(
+  const {weightedGraph, ledger, dependencies} = await prepareCredData( //
     baseDir,
     config
   );
-  const bonusGraph = createBonusGraph(
+  const bonusGraph = createBonusGraph( //
     computeBonusMinting(weightedGraph, dependencies)
   );
   const combinedWeightedGraph = merge([weightedGraph, bonusGraph]);
@@ -137,5 +137,23 @@ function printCredDiffTable(credGraph: CredGraph, priorCredGraph: CredGraph) {
   }
   console.table(sortedParticipants.slice(0, 20).map((n) => row(n)));
 }
+
+export const credrankHelp: Command = async (args, std) => {
+  std.out(
+    dedent`\
+      usage: sourcecred credrank [options]
+
+      options:
+      -d  Outputs the diff of changes compared to the last saved graph.
+      -s, --simulation  Skips writing changes to the graph and ledger jsons.
+
+      Loads in the existing graph, creates bonusgraph of bonus minted cred for dependencies, merges them and rewrites the credGraph.
+
+      Under the hood this runs 'prepareCredData' to gather the existing dependencies and credGraph, 'computeBonusMinting' for the mintiing of bonus cred, asynchronously. If the -s or --simulate arguement is provided, it will not persist the updated graph, and if the -d flag is provided it will attempt to load in the generate the new Graph and compare it to the orrigional.
+      
+      `.trimRight()
+  );
+  return 0;
+};
 
 export default credrankCommand;
