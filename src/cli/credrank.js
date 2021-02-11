@@ -24,10 +24,14 @@ function die(std, message) {
 const credrankCommand: Command = async (args, std) => {
   let shouldIncludeDiff = false;
   let isSimulation = false;
+  let shouldRunStealth = false;
   const processedArgs = args.filter((arg) => {
     switch (arg) {
       case "-d":
         shouldIncludeDiff = true;
+        return false;
+      case "--stealth":
+        shouldRunStealth = true;
         return false;
       case "-s":
       case "--simulate":
@@ -74,7 +78,7 @@ const credrankCommand: Command = async (args, std) => {
       printCredSummaryTable(credGraph);
     }
     taskReporter.finish("load prior graph");
-  } else {
+  } else if (!shouldRunStealth) {
     printCredSummaryTable(credGraph);
   }
 
