@@ -107,6 +107,7 @@ export class Ledger {
   _allocationsToDistributions: Map<AllocationId, DistributionId>;
   _latestTimestamp: TimestampMs = -Infinity;
   _lastDistributionTimestamp: TimestampMs = -Infinity;
+  _totalCirculatingGrain: G.Grain = G.ZERO;
 
   constructor() {
     this._ledgerEventLog = new JsonLog();
@@ -704,8 +705,15 @@ export class Ledger {
    *
    * We provide this because we may want to have a policy that issues one
    * distribution for each interval in the history of the project.
+   *
+   * If there were never any distributions, then -Infinity will be returned.
    */
   lastDistributionTimestamp(): TimestampMs {
+    // TODO(#2744): Amend interface to return null instead of -Infinity
+    // This will be a better interface primarily because in flow checking, it's
+    // easy for the client to not realize that -Infinity could get returned, and
+    // making an explicit return `TimestampMs | null` type will encourage callers
+    // to handle the edge case explicitly.
     return this._lastDistributionTimestamp;
   }
 
@@ -778,6 +786,10 @@ export class Ledger {
     account.paid = G.add(params.grainReceipt.amount, account.paid);
     account.allocationHistory.push(params);
     account.balance = G.add(params.grainReceipt.amount, account.balance);
+    this._totalCirculatingGrain = G.add(
+      this._totalCirculatingGrain,
+      params.grainReceipt.amount
+    );
   }
 }
 
