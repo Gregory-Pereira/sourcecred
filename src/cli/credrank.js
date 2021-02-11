@@ -147,9 +147,9 @@ export const credrankHelp: Command = async (args, std) => {
       -d  Outputs the diff of changes compared to the last saved graph.
       -s, --simulation  Skips writing changes to the graph and ledger jsons.
 
-      Loads in the existing graph, creates bonusgraph of bonus minted cred for dependencies, merges them and rewrites the credGraph.
+      Loads in the existing graph, creates a bonus graph of bonus minted cred for dependencies, merges them, and rewrites the credGraph.
 
-      Under the hood this runs 'prepareCredData' to gather the existing dependencies and credGraph, 'computeBonusMinting' for the mintiing of bonus cred, asynchronously. If the -s or --simulate arguement is provided, it will not persist the updated graph, and if the -d flag is provided it will attempt to load in the generate the new Graph and compare it to the orrigional.
+      Under the hood, this runs 'prepareCredData' to gather the existing dependencies and credGraph, 'computeBonusMinting' for the minting of bonus cred, 'merge' to combine them, and 'credrank' to re-rank the new graph, all asynchronously. If the -s or --simulate argument is provided, it will not persist the updated graph, and if the -d flag is provided it will attempt to load in the generate the new Graph and compare it to the original.
       
       `.trimRight()
   );
